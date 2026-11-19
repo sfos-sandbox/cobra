@@ -1,0 +1,33 @@
+# Added in the SFOS sandbox copy (not part of upstream cobra).
+# Dispatched by the SFOS engine's GitHub Actions connector; the job name
+# "unit" reports as required evidence ci.unit, and junit.xml is uploaded as
+# the run's JUnit evidence.
+name: sfos-validate
+run-name: sfos ${{ inputs.sfos_correlation_id || github.event.pull_request.head.sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      sfos_correlation_id: { required: true, type: string }
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: true
+      - run: go install gotest.tools/gotestsum@v1.12.0
+      - run: gotestsum --junitfile junit.xml --format testname -- -count=1 ./...
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit
+          path: junit.xml
+          if-no-files-found: warn
