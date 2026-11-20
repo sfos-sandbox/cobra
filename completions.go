@@ -366,7 +366,13 @@ func (c *Command) getCompletions(args []string) (*Command, []Completion, ShellCo
 	// if -- was already set or interspersed is false and there is already one arg then
 	// the extra added -- is counted as arg.
 	flagCompletion := true
-	_ = finalCmd.ParseFlags(append(finalArgs, "--"))
+	// Build a new slice rather than appending to finalArgs: finalArgs may share
+	// its backing array with the caller's args (e.g. os.Args), and appending
+	// would overwrite the caller's elements.
+	argsWithDashDash := make([]string, 0, len(finalArgs)+1)
+	argsWithDashDash = append(argsWithDashDash, finalArgs...)
+	argsWithDashDash = append(argsWithDashDash, "--")
+	_ = finalCmd.ParseFlags(argsWithDashDash)
 	newArgCount := finalCmd.Flags().NArg()
 
 	// Parse the flags early so we can check if required flags are set
