@@ -129,7 +129,11 @@ type CompletionOptions struct {
 type Completion = string
 
 // CompletionFunc is a function that provides completion results.
-type CompletionFunc func(cmd *Command, args []string, toComplete string) ([]Completion, ShellCompDirective)
+//
+// Note: a Go type alias is used so that functions declared with the plain
+// signature (returning either []string or []Completion) remain fully
+// interchangeable with CompletionFunc, in both directions.
+type CompletionFunc = func(cmd *Command, args []string, toComplete string) ([]Completion, ShellCompDirective)
 
 // CompletionWithDesc returns a [Completion] with a description by using the TAB delimited format.
 func CompletionWithDesc(choice string, description string) Completion {
